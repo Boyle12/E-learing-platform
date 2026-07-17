@@ -18,14 +18,22 @@ export const instance = new Razorpay({
 const app = express();
 const requestedPort = Number(process.env.PORT || 5000);
 const frontendOrigin = process.env.CORS_ORIGIN || "http://localhost:5173";
-const allowedOrigins = [frontendOrigin, "http://127.0.0.1:5173", "http://localhost:3000", "https://e-learing-platform-git-main-boyle12s-projects.vercel.app",];
+const allowedOrigins = [
+  frontendOrigin.replace(/\/$/, ""), // Remove trailing slash if present
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "https://e-learing-platform-git-main-boyle12s-projects.vercel.app",
+  "https://e-learing-platform.vercel.app"
+];
 
 // using middlewares
 app.use(express.json());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Remove trailing slash from origin just in case
+      const normalizedOrigin = origin ? origin.replace(/\/$/, "") : origin;
+      if (!origin || allowedOrigins.includes(normalizedOrigin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
