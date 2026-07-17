@@ -3,6 +3,7 @@ const TryCatch = (handler) => {
     try {
       await handler(req, res, next);
     } catch (error) {
+      console.error("Error in TryCatch middleware:", error);
       res.status(500).json({
         message: error.message,
       });

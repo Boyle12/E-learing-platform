@@ -2,8 +2,7 @@ import { createTransport } from "nodemailer";
 
 const sendMail = async (email, subject, data) => {
   const transport = createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
+    service: "gmail",
     auth: {
       user: process.env.Gmail,
       pass: process.env.Password,
@@ -69,8 +68,7 @@ export default sendMail;
 
 export const sendForgotMail = async (subject, data) => {
   const transport = createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
+    service: "gmail",
     auth: {
       user: process.env.Gmail,
       pass: process.env.Password,
