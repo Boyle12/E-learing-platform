@@ -1,0 +1,49 @@
+footer {
+  background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%);
+  color: white;
+  padding: 24px 20px;
+  margin-top: 40px;
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 10px;
+
+      a {
+        color: white;
+        font-size: 20px;
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.16);
+        transition: transform 0.2s ease, background 0.2s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.24);
+        }
+      }
+    }
+  }
+}

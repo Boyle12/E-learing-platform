@@ -1,0 +1,28 @@
+.main-content {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.box {
+  flex: 1 1 250px;
+  min-width: 240px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.box p:first-child {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.box p:last-child {
+  font-size: 28px;
+  font-weight: 700;
+}
