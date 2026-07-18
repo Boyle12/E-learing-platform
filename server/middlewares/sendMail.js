@@ -1,34 +1,38 @@
 import { createTransport } from "nodemailer";
 
-// ── Brevo HTTP API (used on deployment where SMTP is blocked) ──
-const sendViaBrevo = async (to, subject, htmlContent) => {
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    throw new Error("BREVO_API_KEY is not set. Cannot send email.");
+// ── EmailJS HTTP API (used on deployment where SMTP is blocked) ──
+const sendViaEmailJS = async (to, subject, htmlContent) => {
+  const serviceId = process.env.EMAILJS_SERVICE_ID;
+  const templateId = process.env.EMAILJS_TEMPLATE_ID;
+  const publicKey = process.env.EMAILJS_PUBLIC_KEY;
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+
+  if (!serviceId || !templateId || !publicKey) {
+    throw new Error("EmailJS environment variables are missing.");
   }
 
-  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+  const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
     method: "POST",
     headers: {
-      accept: "application/json",
-      "api-key": apiKey,
-      "content-type": "application/json",
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      sender: {
-        name: "E-Learning Platform",
-        email: process.env.Gmail,
+      service_id: serviceId,
+      template_id: templateId,
+      user_id: publicKey,
+      accessToken: privateKey, // Required if securing the API
+      template_params: {
+        to_email: to,
+        subject: subject,
+        html_content: htmlContent,
       },
-      to: [{ email: to }],
-      subject,
-      htmlContent,
     }),
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error("Brevo API error:", errorData);
-    throw new Error(errorData.message || `Brevo API returned ${response.status}`);
+    const errorText = await response.text();
+    console.error("EmailJS API error:", errorText);
+    throw new Error(`EmailJS API returned ${response.status}: ${errorText}`);
   }
 };
 
@@ -56,9 +60,12 @@ const getTransport = () => {
 };
 
 // ── Decide which method to use ──
-const useBrevo = () => !!process.env.BREVO_API_KEY;
+const useEmailJS = () => !!process.env.EMAILJS_SERVICE_ID;
 
 const sendMail = async (email, subject, data) => {
+  const expiryTime = new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const companyName = "E-Learning Platform";
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,41 +80,54 @@ const sendMail = async (email, subject, data) => {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            background-color: #f9f9f9;
         }
         .container {
             background-color: #fff;
-            padding: 20px;
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h1 {
-            color: red;
-        }
-        p {
-            margin-bottom: 20px;
-            color: #666;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: left;
+            line-height: 1.6;
+            color: #333;
         }
         .otp {
-            font-size: 36px;
-            color: #7b68ee;
-            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #6d34d1;
+            margin: 20px 0;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+        .warning {
+            font-size: 13px;
+            color: #777;
+            margin-top: 25px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>OTP Verification</h1>
-        <p>Hello ${data.name} your (One-Time Password) for your account verification is.</p>
-        <p class="otp">${data.otp}</p> 
+        <p>To authenticate, please use the following One Time Password (OTP):</p>
+        <div class="otp">${data.otp}</div>
+        <p>This OTP will be valid for 15 minutes till <strong>${expiryTime}</strong>.</p>
+        <p>Do not share this OTP with anyone. If you didn't make this request, you can safely ignore this email.</p>
+        
+        <div class="warning">
+            ${companyName} will never contact you about this email or ask for any login codes or links. Beware of phishing scams.<br><br>
+            Thanks for visiting ${companyName}!
+        </div>
     </div>
 </body>
 </html>
 `;
 
-  if (useBrevo()) {
-    await sendViaBrevo(email, subject, html);
+  if (useEmailJS()) {
+    await sendViaEmailJS(email, subject, html);
   } else {
     await getTransport().sendMail({
       from: process.env.Gmail,
@@ -185,8 +205,8 @@ export const sendForgotMail = async (subject, data) => {
 </html>
 `;
 
-  if (useBrevo()) {
-    await sendViaBrevo(data.email, subject, html);
+  if (useEmailJS()) {
+    await sendViaEmailJS(data.email, subject, html);
   } else {
     await getTransport().sendMail({
       from: process.env.Gmail,
