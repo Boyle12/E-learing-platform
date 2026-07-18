@@ -1,5 +1,38 @@
 import { createTransport } from "nodemailer";
 
+// ── Brevo HTTP API (used on deployment where SMTP is blocked) ──
+const sendViaBrevo = async (to, subject, htmlContent) => {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    throw new Error("BREVO_API_KEY is not set. Cannot send email.");
+  }
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "api-key": apiKey,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      sender: {
+        name: "E-Learning Platform",
+        email: process.env.Gmail,
+      },
+      to: [{ email: to }],
+      subject,
+      htmlContent,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Brevo API error:", errorData);
+    throw new Error(errorData.message || `Brevo API returned ${response.status}`);
+  }
+};
+
+// ── SMTP transport (used on localhost) ──
 let _transport = null;
 
 const getTransport = () => {
@@ -21,6 +54,9 @@ const getTransport = () => {
   }
   return _transport;
 };
+
+// ── Decide which method to use ──
+const useBrevo = () => !!process.env.BREVO_API_KEY;
 
 const sendMail = async (email, subject, data) => {
   const html = `<!DOCTYPE html>
@@ -70,12 +106,16 @@ const sendMail = async (email, subject, data) => {
 </html>
 `;
 
-  await getTransport().sendMail({
-    from: process.env.Gmail,
-    to: email,
-    subject,
-    html,
-  });
+  if (useBrevo()) {
+    await sendViaBrevo(email, subject, html);
+  } else {
+    await getTransport().sendMail({
+      from: process.env.Gmail,
+      to: email,
+      subject,
+      html,
+    });
+  }
 };
 
 export default sendMail;
@@ -145,10 +185,14 @@ export const sendForgotMail = async (subject, data) => {
 </html>
 `;
 
-  await getTransport().sendMail({
-    from: process.env.Gmail,
-    to: data.email,
-    subject,
-    html,
-  });
+  if (useBrevo()) {
+    await sendViaBrevo(data.email, subject, html);
+  } else {
+    await getTransport().sendMail({
+      from: process.env.Gmail,
+      to: data.email,
+      subject,
+      html,
+    });
+  }
 };
