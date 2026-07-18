@@ -1,14 +1,28 @@
 import { createTransport } from "nodemailer";
 
-const sendMail = async (email, subject, data) => {
-  const transport = createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.Gmail,
-      pass: process.env.Password,
-    },
-  });
+let _transport = null;
 
+const getTransport = () => {
+  if (!_transport) {
+    _transport = createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.Gmail,
+        pass: process.env.Password,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+    });
+  }
+  return _transport;
+};
+
+const sendMail = async (email, subject, data) => {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,7 +55,7 @@ const sendMail = async (email, subject, data) => {
         }
         .otp {
             font-size: 36px;
-            color: #7b68ee; /* Purple text */
+            color: #7b68ee;
             margin-bottom: 30px;
         }
     </style>
@@ -56,7 +70,7 @@ const sendMail = async (email, subject, data) => {
 </html>
 `;
 
-  await transport.sendMail({
+  await getTransport().sendMail({
     from: process.env.Gmail,
     to: email,
     subject,
@@ -67,14 +81,6 @@ const sendMail = async (email, subject, data) => {
 export default sendMail;
 
 export const sendForgotMail = async (subject, data) => {
-  const transport = createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.Gmail,
-      pass: process.env.Password,
-    },
-  });
-
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,7 +145,7 @@ export const sendForgotMail = async (subject, data) => {
 </html>
 `;
 
-  await transport.sendMail({
+  await getTransport().sendMail({
     from: process.env.Gmail,
     to: data.email,
     subject,

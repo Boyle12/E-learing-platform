@@ -168,3 +168,116 @@
     flex-direction: column;
   }
 }
+
+/* ── OTP Verification Styles ── */
+
+.otp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(131, 94, 255, 0.15), rgba(109, 52, 209, 0.1));
+  margin: 0 auto 18px;
+}
+
+.otp-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(131, 94, 255, 0.08);
+  color: #6d34d1;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.otp-timer-expired {
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.otp-input {
+  width: 52px !important;
+  height: 60px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #321e7a;
+  border: 2px solid #d9d4f5;
+  border-radius: 16px;
+  background: #f8f5ff;
+  padding: 0 !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  caret-color: #6d34d1;
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: #6d34d1;
+  box-shadow: 0 0 0 4px rgba(109, 52, 209, 0.12);
+  transform: translateY(-2px);
+}
+
+.otp-input-filled {
+  border-color: #6d34d1;
+  background: #f0ebff;
+}
+
+.otp-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 520px) {
+  .otp-inputs {
+    gap: 6px;
+  }
+
+  .otp-input {
+    width: 44px !important;
+    height: 52px;
+    font-size: 20px;
+    border-radius: 12px;
+  }
+}

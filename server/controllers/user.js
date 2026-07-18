@@ -44,7 +44,11 @@ export const register = TryCatch(async (req, res) => {
     otp,
   };
 
-  await sendMail(email, "E learning", data);
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("Email service timed out. Please try again later.")), 15000)
+  );
+
+  await Promise.race([sendMail(email, "E learning", data), timeoutPromise]);
 
   res.status(200).json({
     message: "OTP sent to your email",
